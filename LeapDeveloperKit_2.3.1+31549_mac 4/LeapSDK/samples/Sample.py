@@ -7,7 +7,7 @@
 ################################################################################
 import sys
 sys.path.insert(0, 
-"/Users/anishkrishnan/GitHub/HackCMU2018/LeapDeveloperKit_2.3.1+31549_mac 4/LeapSDK/lib")
+"/LeapDeveloperKit_2.3.1+31549_mac 4/LeapSDK/lib")
 
 import Leap, thread, time
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
