@@ -127,9 +127,9 @@ class SampleListener(Leap.Listener):
 			print handFrameList
 			print str(len(handFrameList)) + "\n\n"
 			
-			with open('g.csv', mode='a') as csv_file:
+			with open('j.csv', mode='a') as csv_file:
 				wr = csv.writer(csv_file, dialect='excel')
-				wr.writerow(["g"] + inputNode)
+				wr.writerow(["j"] + inputNode)
 			csv_file.close()
 
 		# Get tools
