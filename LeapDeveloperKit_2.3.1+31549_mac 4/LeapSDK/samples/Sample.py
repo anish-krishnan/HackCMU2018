@@ -131,8 +131,16 @@ class SampleListener(Leap.Listener):
 		
 			"""
 			with open('j.csv', mode='a') as csv_file:
+			
+			print("ALTERED")
+			print(inputNode)
+			print ""
+			print handFrameList
+			print str(len(handFrameList)) + "\n\n"
+			
+			with open('z.csv', mode='a') as csv_file:
 				wr = csv.writer(csv_file, dialect='excel')
-				wr.writerow(["j"] + inputNode)
+				wr.writerow(["z"] + inputNode)
 			csv_file.close()
 			"""
 
