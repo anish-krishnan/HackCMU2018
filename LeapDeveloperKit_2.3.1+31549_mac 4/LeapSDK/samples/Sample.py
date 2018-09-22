@@ -6,166 +6,211 @@
 # between Leap Motion and you, your company or other organization.             #
 ################################################################################
 import sys
+import csv
 sys.path.insert(0, 
-"/LeapDeveloperKit_2.3.1+31549_mac 4/LeapSDK/lib")
+"/Users/anishkrishnan/GitHub/HackCMU2018/LeapDeveloperKit_2.3.1+31549_mac 4/LeapSDK/lib")
 
-import Leap, thread, time
+import Leap, thread, time, math
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 
 
 class SampleListener(Leap.Listener):
-    finger_names = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky']
-    bone_names = ['Metacarpal', 'Proximal', 'Intermediate', 'Distal']
-    state_names = ['STATE_INVALID', 'STATE_START', 'STATE_UPDATE', 'STATE_END']
+	finger_names = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky']
+	bone_names = ['Metacarpal', 'Proximal', 'Intermediate', 'Distal']
+	state_names = ['STATE_INVALID', 'STATE_START', 'STATE_UPDATE', 'STATE_END']
+	
+	@staticmethod
+	def makeDict(L):
+		myDict = dict()
+		
+		for i in range(len(L)):
+			myDict[str(i)] = L[i]
+		return myDict
 
-    def on_init(self, controller):
-        print "Initialized"
+	
+	@staticmethod
+	def convertToVector(L):
+		#palm coordinates 
+		xp,yp,zp = L[0]
+		newList = []
+		for i in range(1,len(L)):
+			#finger coordinates 
+			xf,yf,zf = L[i]
+			unitVector = math.sqrt((xf -xp)**2 + (yf - yp)**2 + (zf - zp)**2)
+			vector = [(xf - xp)/(unitVector), (yf-yp)/(unitVector), (zf-zp)/(unitVector)]
+			newList.extend(vector)
+		return newList 
 
-    def on_connect(self, controller):
-        print "Connected"
+	def on_init(self, controller):
+		print "Initialized"
 
-        # Enable gestures
-        controller.enable_gesture(Leap.Gesture.TYPE_CIRCLE);
-        controller.enable_gesture(Leap.Gesture.TYPE_KEY_TAP);
-        controller.enable_gesture(Leap.Gesture.TYPE_SCREEN_TAP);
-        controller.enable_gesture(Leap.Gesture.TYPE_SWIPE);
+	def on_connect(self, controller):
+		print "Connected"
 
-    def on_disconnect(self, controller):
-        # Note: not dispatched when running in a debugger.
-        print "Disconnected"
+		# Enable gestures
+		controller.enable_gesture(Leap.Gesture.TYPE_CIRCLE);
+		controller.enable_gesture(Leap.Gesture.TYPE_KEY_TAP);
+		controller.enable_gesture(Leap.Gesture.TYPE_SCREEN_TAP);
+		controller.enable_gesture(Leap.Gesture.TYPE_SWIPE);
 
-    def on_exit(self, controller):
-        print "Exited"
+	def on_disconnect(self, controller):
+		# Note: not dispatched when running in a debugger.
+		print "Disconnected"
 
-    def on_frame(self, controller):
-        # Get the most recent frame and report some basic information
-        frame = controller.frame()
+	def on_exit(self, controller):
+		print "Exited"
 
-        print "Frame id: %d, timestamp: %d, hands: %d, fingers: %d, tools: %d, gestures: %d" % (
-              frame.id, frame.timestamp, len(frame.hands), len(frame.fingers), len(frame.tools), len(frame.gestures()))
+	def on_frame(self, controller):
+		# Get the most recent frame and report some basic information
+		frame = controller.frame()
 
-        # Get hands
-        for hand in frame.hands:
+		# print "Frame id: %d, timestamp: %d, hands: %d, fingers: %d, tools: %d, gestures: %d" % (
+		#       frame.id, frame.timestamp, len(frame.hands), len(frame.fingers), len(frame.tools), len(frame.gestures()))
 
-            handType = "Left hand" if hand.is_left else "Right hand"
+		# Get hands
+		for hand in frame.hands:
+			
+			handFrameList = []
 
-            print "  %s, id %d, position: %s" % (
-                handType, hand.id, hand.palm_position)
+			handType = "Left hand" if hand.is_left else "Right hand"
 
-            # Get the hand's normal vector and direction
-            normal = hand.palm_normal
-            direction = hand.direction
+			# print "  %s, id %d, position: %s" % (
+			#     handType, hand.id, hand.palm_position)
+			# print("     HAND {", handType, "}:", str(hand.palm_position))
+			
+			handFrameList.append([hand.palm_position[0], hand.palm_position[1], hand.palm_position[2]])
 
-            # Calculate the hand's pitch, roll, and yaw angles
-            print "  pitch: %f degrees, roll: %f degrees, yaw: %f degrees" % (
-                direction.pitch * Leap.RAD_TO_DEG,
-                normal.roll * Leap.RAD_TO_DEG,
-                direction.yaw * Leap.RAD_TO_DEG)
+			# Get the hand's normal vector and direction
+			normal = hand.palm_normal
+			direction = hand.direction
 
-            # Get arm bone
-            arm = hand.arm
-            print "  Arm direction: %s, wrist position: %s, elbow position: %s" % (
-                arm.direction,
-                arm.wrist_position,
-                arm.elbow_position)
+			# Calculate the hand's pitch, roll, and yaw angles
+			# print "  pitch: %f degrees, roll: %f degrees, yaw: %f degrees" % (
+			#     direction.pitch * Leap.RAD_TO_DEG,
+			#     normal.roll * Leap.RAD_TO_DEG,
+			#     direction.yaw * Leap.RAD_TO_DEG)
 
-            # Get fingers
-            for finger in hand.fingers:
+			# Get arm bone
+			arm = hand.arm
+			# print "  Arm direction: %s, wrist position: %s, elbow position: %s" % (
+			#     arm.direction,
+			#     arm.wrist_position,
+			#     arm.elbow_position)
+			# print("     WRIST: ", str(arm.wrist_position))
 
-                print "    %s finger, id: %d, length: %fmm, width: %fmm" % (
-                    self.finger_names[finger.type],
-                    finger.id,
-                    finger.length,
-                    finger.width)
+			# Get fingers
+			for finger in hand.fingers:
 
-                # Get bones
-                for b in range(0, 4):
-                    bone = finger.bone(b)
-                    print "      Bone: %s, start: %s, end: %s, direction: %s" % (
-                        self.bone_names[bone.type],
-                        bone.prev_joint,
-                        bone.next_joint,
-                        bone.direction)
+				# print "    %s finger, id: %d, length: %fmm, width: %fmm" % (
+				#     self.finger_names[finger.type],
+				#     finger.id,
+				#     finger.length,
+				#     finger.width)
 
-        # Get tools
-        for tool in frame.tools:
+				# Get bones
+				for b in range(1, 4):
+					bone = finger.bone(b)
+					# print "      Bone: %s, start: %s, end: %s, direction: %s" % (
+					#     self.bone_names[bone.type],
+					#     bone.prev_joint,
+					#     bone.next_joint,
+					#     bone.direction)
+					# print "         Bone:", b, str(bone.next_joint)
+					handFrameList.append([bone.next_joint[0], bone.next_joint[1], bone.next_joint[2]])
+			
+		
+			inputNode = SampleListener.convertToVector(handFrameList)
+			
+			print("ALTERED")
+			print(inputNode)
+			print ""
+			print handFrameList
+			print str(len(handFrameList)) + "\n\n"
+			
+			with open('g.csv', mode='a') as csv_file:
+				wr = csv.writer(csv_file, dialect='excel')
+				wr.writerow(["g"] + inputNode)
+			csv_file.close()
 
-            print "  Tool id: %d, position: %s, direction: %s" % (
-                tool.id, tool.tip_position, tool.direction)
+		# Get tools
+		for tool in frame.tools:
 
-        # Get gestures
-        for gesture in frame.gestures():
-            if gesture.type == Leap.Gesture.TYPE_CIRCLE:
-                circle = CircleGesture(gesture)
+			print "  Tool id: %d, position: %s, direction: %s" % (
+				tool.id, tool.tip_position, tool.direction)
 
-                # Determine clock direction using the angle between the pointable and the circle normal
-                if circle.pointable.direction.angle_to(circle.normal) <= Leap.PI/2:
-                    clockwiseness = "clockwise"
-                else:
-                    clockwiseness = "counterclockwise"
+		# Get gestures
+		# for gesture in frame.gestures():
+		#     if gesture.type == Leap.Gesture.TYPE_CIRCLE:
+		#         circle = CircleGesture(gesture)
 
-                # Calculate the angle swept since the last frame
-                swept_angle = 0
-                if circle.state != Leap.Gesture.STATE_START:
-                    previous_update = CircleGesture(controller.frame(1).gesture(circle.id))
-                    swept_angle =  (circle.progress - previous_update.progress) * 2 * Leap.PI
+	   ##           # Determine clock direction using the angle between the pointable and the circle normal
+		#         if circle.pointable.direction.angle_to(circle.normal) <= Leap.PI/2:
+		#             clockwiseness = "clockwise"
+		#         else:
+		#             clockwiseness = "counterclockwise"
 
-                print "  Circle id: %d, %s, progress: %f, radius: %f, angle: %f degrees, %s" % (
-                        gesture.id, self.state_names[gesture.state],
-                        circle.progress, circle.radius, swept_angle * Leap.RAD_TO_DEG, clockwiseness)
+	   ##           # Calculate the angle swept since the last frame
+		#         swept_angle = 0
+		#         if circle.state != Leap.Gesture.STATE_START:
+		#             previous_update = CircleGesture(controller.frame(1).gesture(circle.id))
+		#             swept_angle =  (circle.progress - previous_update.progress) * 2 * Leap.PI
 
-            if gesture.type == Leap.Gesture.TYPE_SWIPE:
-                swipe = SwipeGesture(gesture)
-                print "  Swipe id: %d, state: %s, position: %s, direction: %s, speed: %f" % (
-                        gesture.id, self.state_names[gesture.state],
-                        swipe.position, swipe.direction, swipe.speed)
+	   ##           print "  Circle id: %d, %s, progress: %f, radius: %f, angle: %f degrees, %s" % (
+		#                 gesture.id, self.state_names[gesture.state],
+		#                 circle.progress, circle.radius, swept_angle * Leap.RAD_TO_DEG, clockwiseness)
 
-            if gesture.type == Leap.Gesture.TYPE_KEY_TAP:
-                keytap = KeyTapGesture(gesture)
-                print "  Key Tap id: %d, %s, position: %s, direction: %s" % (
-                        gesture.id, self.state_names[gesture.state],
-                        keytap.position, keytap.direction )
+	   ##       if gesture.type == Leap.Gesture.TYPE_SWIPE:
+		#         swipe = SwipeGesture(gesture)
+		#         print "  Swipe id: %d, state: %s, position: %s, direction: %s, speed: %f" % (
+		#                 gesture.id, self.state_names[gesture.state],
+		#                 swipe.position, swipe.direction, swipe.speed)
 
-            if gesture.type == Leap.Gesture.TYPE_SCREEN_TAP:
-                screentap = ScreenTapGesture(gesture)
-                print "  Screen Tap id: %d, %s, position: %s, direction: %s" % (
-                        gesture.id, self.state_names[gesture.state],
-                        screentap.position, screentap.direction )
+	   ##       if gesture.type == Leap.Gesture.TYPE_KEY_TAP:
+		#         keytap = KeyTapGesture(gesture)
+		#         print "  Key Tap id: %d, %s, position: %s, direction: %s" % (
+		#                 gesture.id, self.state_names[gesture.state],
+		#                 keytap.position, keytap.direction )
 
-        if not (frame.hands.is_empty and frame.gestures().is_empty):
-            print ""
+	   ##       if gesture.type == Leap.Gesture.TYPE_SCREEN_TAP:
+		#         screentap = ScreenTapGesture(gesture)
+		#         print "  Screen Tap id: %d, %s, position: %s, direction: %s" % (
+		#                 gesture.id, self.state_names[gesture.state],
+		#                 screentap.position, screentap.direction )
 
-    def state_string(self, state):
-        if state == Leap.Gesture.STATE_START:
-            return "STATE_START"
+		if not (frame.hands.is_empty and frame.gestures().is_empty):
+			print ""
 
-        if state == Leap.Gesture.STATE_UPDATE:
-            return "STATE_UPDATE"
+	def state_string(self, state):
+		if state == Leap.Gesture.STATE_START:
+			return "STATE_START"
 
-        if state == Leap.Gesture.STATE_STOP:
-            return "STATE_STOP"
+		if state == Leap.Gesture.STATE_UPDATE:
+			return "STATE_UPDATE"
 
-        if state == Leap.Gesture.STATE_INVALID:
-            return "STATE_INVALID"
+		if state == Leap.Gesture.STATE_STOP:
+			return "STATE_STOP"
+
+		if state == Leap.Gesture.STATE_INVALID:
+			return "STATE_INVALID"
 
 def main():
-    # Create a sample listener and controller
-    listener = SampleListener()
-    controller = Leap.Controller()
+	# Create a sample listener and controller
+	listener = SampleListener()
+	controller = Leap.Controller()
 
-    # Have the sample listener receive events from the controller
-    controller.add_listener(listener)
+	# Have the sample listener receive events from the controller
+	controller.add_listener(listener)
 
-    # Keep this process running until Enter is pressed
-    print "Press Enter to quit..."
-    try:
-        sys.stdin.readline()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        # Remove the sample listener when done
-        controller.remove_listener(listener)
+	# Keep this process running until Enter is pressed
+	print "Press Enter to quit..."
+	try:
+		sys.stdin.readline()
+	except KeyboardInterrupt:
+		pass
+	finally:
+		# Remove the sample listener when done
+		controller.remove_listener(listener)
 
 
 if __name__ == "__main__":
-    main()
+	main()
