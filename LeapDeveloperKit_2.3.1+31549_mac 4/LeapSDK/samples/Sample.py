@@ -12,7 +12,8 @@ sys.path.insert(0,
 
 import Leap, thread, time, math
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
-
+from neural_nets import * 
+model = buildModel()
 
 class SampleListener(Leap.Listener):
 	finger_names = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky']
@@ -120,17 +121,20 @@ class SampleListener(Leap.Listener):
 			
 		
 			inputNode = SampleListener.convertToVector(handFrameList)
-			
-			print("ALTERED")
-			print(inputNode)
-			print ""
-			print handFrameList
-			print str(len(handFrameList)) + "\n\n"
-			
+
+			numpyMatrix = np.matrix(inputNode)
+			global model 
+
+			letter = predictLetter(model, numpyMatrix, .8)
+
+			print(letter)
+		
+			"""
 			with open('j.csv', mode='a') as csv_file:
 				wr = csv.writer(csv_file, dialect='excel')
 				wr.writerow(["j"] + inputNode)
 			csv_file.close()
+			"""
 
 		# Get tools
 		for tool in frame.tools:
@@ -213,4 +217,5 @@ def main():
 
 
 if __name__ == "__main__":
+	
 	main()
