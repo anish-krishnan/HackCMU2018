@@ -15,7 +15,7 @@ def getData():
 
 	fullList = []
 	lettera = ord("a")
-	for i in range(3):
+	for i in range(26):
 		data = readCSV(("%s.csv" % chr(lettera+i)))
 		fullList.extend(data)
 
