@@ -9,9 +9,9 @@ import threading
 
 engine = pyttsx.init()
 
-def coolStuff():
+def coolStuff(say):
     
-    engine.say("a")
+    engine.say(say)
     # engine.runAndWait()
     
     t = threading.Thread(target=engine.runAndWait,name="hi")
@@ -20,10 +20,10 @@ def coolStuff():
     
     print("stop")
 
-def this():
-    coolStuff()
+def this(say):
+    coolStuff(say)
     time.sleep(1)
-    coolStuff()
+    coolStuff(say)
 
 
     

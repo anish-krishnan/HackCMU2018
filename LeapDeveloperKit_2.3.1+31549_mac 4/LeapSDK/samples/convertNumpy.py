@@ -18,15 +18,19 @@ def getData():
 	for i in range(26):
 		data = readCSV(("%s.csv" % chr(lettera+i)))
 		fullList.extend(data)
+	data = readCSV("space.csv")
+	fullList.extend(data)
 
 	from random import shuffle
 	shuffle(fullList)
 
 	letterDict = dict()
-	for i in range(26):
-		arr = [0]*26
+	for i in range(27):
+		arr = [0]*27
 		arr[i] = 1
-		letterDict[chr(ord("a")+i)]=arr
+		if i == 26:
+			letterDict["space"] = arr
+		else: letterDict[chr(ord("a")+i)]=arr
 
 	letterList = []
 	vectorList = []

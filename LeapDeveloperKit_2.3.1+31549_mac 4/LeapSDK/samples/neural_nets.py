@@ -12,7 +12,7 @@ def buildModel():
 	# Add another:
 	model.add(keras.layers.Dense(45, activation='relu'))
 	# Add a softmax layer with 26 output units:
-	model.add(keras.layers.Dense(26, activation='softmax'))
+	model.add(keras.layers.Dense(27, activation='softmax'))
 
 	model.compile(optimizer=tf.train.AdamOptimizer(0.001),
 				  loss='categorical_crossentropy',
