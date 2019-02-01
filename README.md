@@ -1,5 +1,7 @@
 # Syne 
-Project developed at Hack CMU 2018
+#### Project developed at Hack CMU 2018
+
+**Video:** https://www.youtube.com/watch?v=YZfCtv7U_dM&t=2s
 
 Over 70 million people globally are mute, and many more with other hearing or speech impairments. Their communication is limited to sign language, and without a translator, conveying information to society at large is nearly impossible. However, especially in developing countries, many facilities still lack the resources to communicate with mute people. Participating in class, asking for help, and other day to day tasks most of us take for granted are challenges for those with such speech disabilities. Introducing, Syne! Syne is a tensorflow-based sign language processing system that allows mute people to efficiently communicate with the outside world. 
 
